@@ -83,29 +83,8 @@ $projectImageUrl = $_SERVER['PROJECT_IMAGE_URL'] ?? '';
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     }
-    .loader {
-      margin: 1.25rem auto 1.25rem;
-      width: 48px;
-      height: 48px;
-      border: 3px solid rgba(255, 255, 255, 0.25);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
     .hint {
       opacity: 0.9;
-    }
-    .sr-only {
-      position: absolute;
-      width: 1px; height: 1px;
-      padding: 0; margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap; border: 0;
     }
     h1 {
       font-size: 3rem;
@@ -129,18 +108,33 @@ $projectImageUrl = $_SERVER['PROJECT_IMAGE_URL'] ?? '';
       font-size: 0.8rem;
       opacity: 0.7;
     }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--bg-color-end);
+      color: var(--text-color);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      border: none;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #1e5fa5;
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="card">
-      <h1>Analyzing your requirements and generating your website…</h1>
-      <div class="loader" role="status" aria-live="polite" aria-label="Applying initial changes">
-        <span class="sr-only">Loading…</span>
-      </div>
-      <p class="hint"><?= ($_SERVER['HTTP_HOST'] ?? '') === 'appwizzy.com' ? 'AppWizzy' : 'Flatlogic' ?> AI is collecting your requirements and applying the first changes.</p>
-      <p class="hint">This page will update automatically as the plan is implemented.</p>
-      <p>Runtime: PHP <code><?= htmlspecialchars($phpVersion) ?></code> — UTC <code><?= htmlspecialchars($now) ?></code></p>
+      <h1>Welcome to Your New Application!</h1>
+      <p class="hint">This is the starting point of your project.</p>
+      <p>
+        <a href="admin_restaurants.php" class="btn">Manage Restaurants</a>
+      </p>
+      <p style="margin-top: 2rem;">Runtime: PHP <code><?= htmlspecialchars($phpVersion) ?></code> — UTC <code><?= htmlspecialchars($now) ?></code></p>
     </div>
   </main>
   <footer>
