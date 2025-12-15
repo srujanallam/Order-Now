@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.php';
 require_once 'db/config.php';
 
 $restaurants = [];
@@ -15,52 +16,14 @@ try {
 }
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find a Restaurant</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F8F9FA;
-        }
-        .hero {
-            background-color: #343A40;
-            color: #FFFFFF;
-            padding: 4rem 0;
-            text-align: center;
-        }
-        .restaurant-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .restaurant-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-        }
-        .btn-primary {
-            background-color: #FF6347;
-            border-color: #FF6347;
-        }
-        .btn-primary:hover {
-            background-color: #E5533D;
-            border-color: #E5533D;
-        }
-    </style>
-</head>
-<body>
+<header class="hero">
+    <div class="container">
+        <h1 class="display-4">Find Your Next Meal</h1>
+        <p class="lead">Browse through our collection of partner restaurants.</p>
+    </div>
+</header>
 
-    <header class="hero">
-        <div class="container">
-            <h1 class="display-4">Find Your Next Meal</h1>
-            <p class="lead">Browse through our collection of partner restaurants.</p>
-        </div>
-    </header>
-
-    <main class="container my-5">
+<main class="container my-5">
         <div class="row mb-4">
             <div class="col-md-8">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search by restaurant name...">
@@ -99,45 +62,39 @@ try {
             <p>No restaurants match your search.</p>
         </div>
     </main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const cuisineFilter = document.getElementById('cuisineFilter');
+        const restaurantList = document.getElementById('restaurantList');
+        const restaurantItems = restaurantList.querySelectorAll('.restaurant-item');
+        const noResults = document.getElementById('noResults');
 
-    <footer class="text-center text-muted py-4">
-        <p>&copy; <?= date('Y') ?> Food Marketplace</p>
-    </footer>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const cuisineFilter = document.getElementById('cuisineFilter');
-            const restaurantList = document.getElementById('restaurantList');
-            const restaurantItems = restaurantList.querySelectorAll('.restaurant-item');
-            const noResults = document.getElementById('noResults');
+        function filterRestaurants() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const cuisineTerm = cuisineFilter.value.toLowerCase();
+            let resultsFound = false;
 
-            function filterRestaurants() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const cuisineTerm = cuisineFilter.value.toLowerCase();
-                let resultsFound = false;
+            restaurantItems.forEach(item => {
+                const name = item.dataset.name;
+                const cuisine = item.dataset.cuisine;
 
-                restaurantItems.forEach(item => {
-                    const name = item.dataset.name;
-                    const cuisine = item.dataset.cuisine;
+                const nameMatch = name.includes(searchTerm);
+                const cuisineMatch = cuisineTerm === '' || cuisine.includes(cuisineTerm);
 
-                    const nameMatch = name.includes(searchTerm);
-                    const cuisineMatch = cuisineTerm === '' || cuisine.includes(cuisineTerm);
+                if (nameMatch && cuisineMatch) {
+                    item.style.display = '';
+                    resultsFound = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
 
-                    if (nameMatch && cuisineMatch) {
-                        item.style.display = '';
-                        resultsFound = true;
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+            noResults.style.display = resultsFound ? 'none' : '';
+        }
 
-                noResults.style.display = resultsFound ? 'none' : '';
-            }
-
-            searchInput.addEventListener('input', filterRestaurants);
-            cuisineFilter.addEventListener('change', filterRestaurants);
-        });
-    </script>
-
-</body>
-</html>
+        searchInput.addEventListener('input', filterRestaurants);
+        cuisineFilter.addEventListener('change', filterRestaurants);
+    });
+</script>
+<?php require_once 'includes/footer.php'; ?>
