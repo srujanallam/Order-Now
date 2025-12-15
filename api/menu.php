@@ -25,11 +25,19 @@ switch ($method) {
 }
 
 function handle_get() {
+    if (empty($_GET['restaurant_id'])) {
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(['success' => false, 'error' => 'Restaurant ID is required.']);
+        return;
+    }
+    $restaurant_id = $_GET['restaurant_id'];
+
     try {
         $pdo = db();
-        $stmt = $pdo->query("SELECT id, name, address, phone, email FROM restaurants ORDER BY created_at DESC");
-        $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode(['success' => true, 'data' => $restaurants]);
+        $stmt = $pdo->prepare("SELECT id, name, description, price, category FROM menu_items WHERE restaurant_id = :restaurant_id ORDER BY category, name");
+        $stmt->execute([':restaurant_id' => $restaurant_id]);
+        $menu_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(['success' => true, 'data' => $menu_items]);
     } catch (PDOException $e) {
         header('HTTP/1.1 500 Internal Server Error');
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
@@ -39,31 +47,30 @@ function handle_get() {
 function handle_post() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email'])) {
+    if (empty($data['restaurant_id']) || empty($data['name']) || !isset($data['price'])) {
         header('HTTP/1.1 400 Bad Request');
-        echo json_encode(['success' => false, 'error' => 'All fields are required.']);
+        echo json_encode(['success' => false, 'error' => 'Restaurant ID, name, and price are required.']);
         return;
     }
 
     try {
         $pdo = db();
-        $sql = "INSERT INTO restaurants (name, address, phone, email) VALUES (:name, :address, :phone, :email)";
+        $sql = "INSERT INTO menu_items (restaurant_id, name, description, price, category) VALUES (:restaurant_id, :name, :description, :price, :category)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
+            ':restaurant_id' => $data['restaurant_id'],
             ':name' => $data['name'],
-            ':address' => $data['address'],
-            ':phone' => $data['phone'],
-            ':email' => $data['email'],
+            ':description' => $data['description'] ?? null,
+            ':price' => $data['price'],
+            ':category' => $data['category'] ?? null,
         ]);
 
         $lastInsertId = $pdo->lastInsertId();
-        
-        // Fetch the created restaurant to return it
-        $stmt = $pdo->prepare("SELECT id, name, address, phone, email FROM restaurants WHERE id = :id");
+        $stmt = $pdo->prepare("SELECT * FROM menu_items WHERE id = :id");
         $stmt->execute(['id' => $lastInsertId]);
-        $newRestaurant = $stmt->fetch(PDO::FETCH_ASSOC);
+        $newItem = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        echo json_encode(['success' => true, 'data' => $newRestaurant]);
+        echo json_encode(['success' => true, 'data' => $newItem]);
     } catch (PDOException $e) {
         header('HTTP/1.1 500 Internal Server Error');
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
@@ -73,7 +80,7 @@ function handle_post() {
 function handle_put() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['id']) || empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email'])) {
+    if (empty($data['id']) || empty($data['name']) || !isset($data['price'])) {
         header('HTTP/1.1 400 Bad Request');
         echo json_encode(['success' => false, 'error' => 'All fields including ID are required.']);
         return;
@@ -81,14 +88,14 @@ function handle_put() {
 
     try {
         $pdo = db();
-        $sql = "UPDATE restaurants SET name = :name, address = :address, phone = :phone, email = :email WHERE id = :id";
+        $sql = "UPDATE menu_items SET name = :name, description = :description, price = :price, category = :category WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':id' => $data['id'],
             ':name' => $data['name'],
-            ':address' => $data['address'],
-            ':phone' => $data['phone'],
-            ':email' => $data['email'],
+            ':description' => $data['description'] ?? null,
+            ':price' => $data['price'],
+            ':category' => $data['category'] ?? null,
         ]);
 
         echo json_encode(['success' => true]);
@@ -103,13 +110,13 @@ function handle_delete() {
 
     if (empty($data['id'])) {
         header('HTTP/1.1 400 Bad Request');
-        echo json_encode(['success' => false, 'error' => 'Restaurant ID is required.']);
+        echo json_encode(['success' => false, 'error' => 'Menu item ID is required.']);
         return;
     }
 
     try {
         $pdo = db();
-        $sql = "DELETE FROM restaurants WHERE id = :id";
+        $sql = "DELETE FROM menu_items WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':id' => $data['id']]);
 
@@ -117,7 +124,7 @@ function handle_delete() {
             echo json_encode(['success' => true]);
         } else {
             header('HTTP/1.1 404 Not Found');
-            echo json_encode(['success' => false, 'error' => 'Restaurant not found.']);
+            echo json_encode(['success' => false, 'error' => 'Menu item not found.']);
         }
     } catch (PDOException $e) {
         header('HTTP/1.1 500 Internal Server Error');

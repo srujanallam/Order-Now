@@ -1,144 +1,87 @@
 <?php
-declare(strict_types=1);
-@ini_set('display_errors', '1');
-@error_reporting(E_ALL);
-@date_default_timezone_set('UTC');
+require_once 'db/config.php';
 
-$phpVersion = PHP_VERSION;
-$now = date('Y-m-d H:i:s');
+$restaurants = [];
+try {
+    $pdo = db();
+    $stmt = $pdo->query("SELECT id, name, address, phone, email FROM restaurants ORDER BY name ASC");
+    $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // For a real app, you would log this error and show a user-friendly message.
+    error_log("Database error: " . $e->getMessage());
+}
+
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>New Style</title>
-<?php
-// Read project preview data from environment
-$projectDescription = $_SERVER['PROJECT_DESCRIPTION'] ?? '';
-$projectImageUrl = $_SERVER['PROJECT_IMAGE_URL'] ?? '';
-?>
-<?php if ($projectDescription): ?>
-  <!-- Meta description -->
-  <meta name="description" content='<?= htmlspecialchars($projectDescription) ?>' />
-  <!-- Open Graph meta tags -->
-  <meta property="og:description" content="<?= htmlspecialchars($projectDescription) ?>" />
-  <!-- Twitter meta tags -->
-  <meta property="twitter:description" content="<?= htmlspecialchars($projectDescription) ?>" />
-<?php endif; ?>
-<?php if ($projectImageUrl): ?>
-  <!-- Open Graph image -->
-  <meta property="og:image" content="<?= htmlspecialchars($projectImageUrl) ?>" />
-  <!-- Twitter image -->
-  <meta property="twitter:image" content="<?= htmlspecialchars($projectImageUrl) ?>" />
-<?php endif; ?>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color-start: #6a11cb;
-      --bg-color-end: #2575fc;
-      --text-color: #ffffff;
-      --card-bg-color: rgba(255, 255, 255, 0.01);
-      --card-border-color: rgba(255, 255, 255, 0.1);
-    }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(45deg, var(--bg-color-start), var(--bg-color-end));
-      color: var(--text-color);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      text-align: center;
-      overflow: hidden;
-      position: relative;
-    }
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M-10 10L110 10M10 -10L10 110" stroke-width="1" stroke="rgba(255,255,255,0.05)"/></svg>');
-      animation: bg-pan 20s linear infinite;
-      z-index: -1;
-    }
-    @keyframes bg-pan {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 100% 100%; }
-    }
-    main {
-      padding: 2rem;
-    }
-    .card {
-      background: var(--card-bg-color);
-      border: 1px solid var(--card-border-color);
-      border-radius: 16px;
-      padding: 2rem;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-    }
-    .hint {
-      opacity: 0.9;
-    }
-    h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      margin: 0 0 1rem;
-      letter-spacing: -1px;
-    }
-    p {
-      margin: 0.5rem 0;
-      font-size: 1.1rem;
-    }
-    code {
-      background: rgba(0,0,0,0.2);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-    footer {
-      position: absolute;
-      bottom: 1rem;
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-    .btn {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      background-color: var(--bg-color-end);
-      color: var(--text-color);
-      text-decoration: none;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-      border: none;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #1e5fa5;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Restaurant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8F9FA;
+        }
+        .hero {
+            background-color: #343A40;
+            color: #FFFFFF;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .restaurant-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background-color: #FF6347;
+            border-color: #FF6347;
+        }
+        .btn-primary:hover {
+            background-color: #E5533D;
+            border-color: #E5533D;
+        }
+    </style>
 </head>
 <body>
-  <main>
-    <div class="card">
-      <h1>Welcome to Your New Application!</h1>
-      <p class="hint">This is the starting point of your project.</p>
-      <p>
-        <a href="admin_restaurants.php" class="btn">Manage Restaurants</a>
-      </p>
-      <p style="margin-top: 2rem;">Runtime: PHP <code><?= htmlspecialchars($phpVersion) ?></code> — UTC <code><?= htmlspecialchars($now) ?></code></p>
-    </div>
-  </main>
-  <footer>
-    Page updated: <?= htmlspecialchars($now) ?> (UTC)
-  </footer>
+
+    <header class="hero">
+        <div class="container">
+            <h1 class="display-4">Find Your Next Meal</h1>
+            <p class="lead">Browse through our collection of partner restaurants.</p>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <div class="row">
+            <?php if (empty($restaurants)): ?>
+                <div class="col">
+                    <p class="text-center text-muted">No restaurants are available at the moment. Please check back later.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($restaurants as $restaurant): ?>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 restaurant-card">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title"><?= htmlspecialchars($restaurant['name']) ?></h5>
+                                <p class="card-text text-muted flex-grow-1"><?= htmlspecialchars($restaurant['address']) ?></p>
+                                <a href="menu.php?restaurant_id=<?= $restaurant['id'] ?>" class="btn btn-primary mt-auto">View Menu</a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </main>
+
+    <footer class="text-center text-muted py-4">
+        <p>&copy; <?= date('Y') ?> Food Marketplace</p>
+    </footer>
+
 </body>
 </html>
