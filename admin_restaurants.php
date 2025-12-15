@@ -59,6 +59,7 @@
                             <th>Address</th>
                             <th>Phone</th>
                             <th>Email</th>
+                            <th>Cuisine</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -96,6 +97,10 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">Contact Email</label>
                             <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cuisine" class="form-label">Cuisine</label>
+                            <input type="text" class="form-control" id="cuisine" name="cuisine" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Restaurant</button>
                     </form>
@@ -185,6 +190,7 @@
                         <td data-field="address">${r.address}</td>
                         <td data-field="phone">${r.phone}</td>
                         <td data-field="email">${r.email}</td>
+                        <td data-field="cuisine">${r.cuisine}</td>
                         <td>
                             <a href="restaurant_menu.php?restaurant_id=${r.id}" class="btn btn-sm btn-info menu-btn" title="Manage Menu"><i class="bi bi-card-list"></i></a>
                             <button class="btn btn-sm btn-secondary edit-btn" title="Edit Restaurant"><i class="bi bi-pencil"></i></button>
@@ -210,6 +216,7 @@
                         document.getElementById('address').value = row.querySelector('[data-field="address"]').textContent;
                         document.getElementById('phone').value = row.querySelector('[data-field="phone"]').textContent;
                         document.getElementById('email').value = row.querySelector('[data-field="email"]').textContent;
+                        document.getElementById('cuisine').value = row.querySelector('[data-field="cuisine"]').textContent;
                         
                         restaurantModalLabel.textContent = 'Edit Restaurant';
                         restaurantModal.show();

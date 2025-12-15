@@ -27,7 +27,7 @@ switch ($method) {
 function handle_get() {
     try {
         $pdo = db();
-        $stmt = $pdo->query("SELECT id, name, address, phone, email FROM restaurants ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT id, name, cuisine, address, phone, email FROM restaurants ORDER BY created_at DESC");
         $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'data' => $restaurants]);
     } catch (PDOException $e) {
@@ -39,7 +39,7 @@ function handle_get() {
 function handle_post() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email'])) {
+    if (empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email']) || empty($data['cuisine'])) {
         header('HTTP/1.1 400 Bad Request');
         echo json_encode(['success' => false, 'error' => 'All fields are required.']);
         return;
@@ -47,10 +47,11 @@ function handle_post() {
 
     try {
         $pdo = db();
-        $sql = "INSERT INTO restaurants (name, address, phone, email) VALUES (:name, :address, :phone, :email)";
+        $sql = "INSERT INTO restaurants (name, cuisine, address, phone, email) VALUES (:name, :cuisine, :address, :phone, :email)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':name' => $data['name'],
+            ':cuisine' => $data['cuisine'],
             ':address' => $data['address'],
             ':phone' => $data['phone'],
             ':email' => $data['email'],
@@ -59,7 +60,7 @@ function handle_post() {
         $lastInsertId = $pdo->lastInsertId();
         
         // Fetch the created restaurant to return it
-        $stmt = $pdo->prepare("SELECT id, name, address, phone, email FROM restaurants WHERE id = :id");
+        $stmt = $pdo->prepare("SELECT id, name, cuisine, address, phone, email FROM restaurants WHERE id = :id");
         $stmt->execute(['id' => $lastInsertId]);
         $newRestaurant = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -73,7 +74,7 @@ function handle_post() {
 function handle_put() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['id']) || empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email'])) {
+    if (empty($data['id']) || empty($data['name']) || empty($data['address']) || empty($data['phone']) || empty($data['email']) || empty($data['cuisine'])) {
         header('HTTP/1.1 400 Bad Request');
         echo json_encode(['success' => false, 'error' => 'All fields including ID are required.']);
         return;
@@ -81,11 +82,12 @@ function handle_put() {
 
     try {
         $pdo = db();
-        $sql = "UPDATE restaurants SET name = :name, address = :address, phone = :phone, email = :email WHERE id = :id";
+        $sql = "UPDATE restaurants SET name = :name, cuisine = :cuisine, address = :address, phone = :phone, email = :email WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':id' => $data['id'],
             ':name' => $data['name'],
+            ':cuisine' => $data['cuisine'],
             ':address' => $data['address'],
             ':phone' => $data['phone'],
             ':email' => $data['email'],
